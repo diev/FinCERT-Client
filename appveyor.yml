@@ -28,7 +28,7 @@ dotnet_csproj:
   informational_version: '{version}'
 install:
 - ps: >-
-    $src = FeedsAPI
+    $src = "FeedsAPI"
 
     [XML]$xml = Get-Content "$src\$src.csproj"
 
