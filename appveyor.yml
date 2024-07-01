@@ -28,7 +28,9 @@ dotnet_csproj:
   informational_version: '{version}'
 install:
 - ps: >-
-    [XML]$xml = Get-Content "$env:APPVEYOR_PROJECT_NAME\$env:APPVEYOR_PROJECT_NAME.csproj"
+    $src = FeedsAPI
+
+    [XML]$xml = Get-Content "$src\$src.csproj"
 
     Update-AppveyorBuild -Version "$($xml.Project.PropertyGroup.Version[0]).$env:APPVEYOR_BUILD_NUMBER"
 
@@ -36,7 +38,7 @@ install:
 
     $env:BuildDate = $CommitDateTime.ToString('yyyy-MM-dd')
 
-    $env:AppZip = "$env:APPVEYOR_PROJECT_NAME-v$env:APPVEYOR_BUILD_VERSION.zip"
+    $env:AppZip = "$src-v$env:APPVEYOR_BUILD_VERSION.zip"
 
     Write-Host "Building v$env:APPVEYOR_BUILD_VERSION dated $env:BuildDate"
 build_script:
