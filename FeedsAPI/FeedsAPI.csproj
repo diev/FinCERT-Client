@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>FeedsApi</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>8.2024.701</Version>
+    <Company>diev</Company>
+    <Copyright>2022-2024 Dmitrii Evdokimov</Copyright>
+    <Description>Получение фидов из FinCERT Банка России.</Description>
+    <NeutralLanguage>ru-RU</NeutralLanguage>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Authors>Diev</Authors>
+    <PackageProjectUrl>https://github.com/diev/FinCERT-Client</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/diev/FinCERT-Client.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+</Project>
