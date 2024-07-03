@@ -17,13 +17,42 @@ limitations under the License.
 */
 #endregion
 
+using System.Diagnostics;
+
 namespace FincertClient.Managers;
 
 internal static class Helper
 {
-    public static string PathCombine(string dir, string name)
+    public static string CorrectName(string name)
     {
         string file = string.Concat(name.Split(Path.GetInvalidFileNameChars())).Trim();
-        return Path.Combine(dir, file.Length > 0 ? file : "--");
+        return file.Length > 0 ? file : "--";
+    }
+
+    public static string GetLogFile(string? logDirectory)
+    {
+        string logs = logDirectory ?? nameof(logs);
+        var now = DateTime.Now;
+        var logsPath = Directory.CreateDirectory(Path.Combine(logs, now.ToString("yyyy")));
+        var file = Path.Combine(logsPath.FullName, now.ToString("yyyyMMdd") + ".log");
+
+        Console.WriteLine(@$"Лог пишется в файл ""{file}"".");
+
+        return file;
+    }
+
+    public static void TraceError(string message, Exception ex)
+    {
+        Console.WriteLine("Вывод информации об ошибке.");
+
+        Trace.WriteLine($"{DateTime.Now:G} {message}: {ex.Message}.");
+        string text = $"{DateTime.Now:G} Exception:{Environment.NewLine}{ex}{Environment.NewLine}";
+
+        if (ex.InnerException != null)
+        {
+            text += $"Inner Exception:{Environment.NewLine}{ex.InnerException}{Environment.NewLine}";
+        }
+
+        File.AppendAllText("error.log", text);
     }
 }

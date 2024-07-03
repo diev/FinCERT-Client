@@ -58,6 +58,8 @@ internal static class Feeds
     {
         try
         {
+            Directory.CreateDirectory(path);
+
             var response = await TlsClient.GetAsync($"antifraud/feeds/{feed}/download");
             response.EnsureSuccessStatusCode();
 

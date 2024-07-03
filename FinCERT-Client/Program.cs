@@ -17,6 +17,10 @@ limitations under the License.
 */
 #endregion
 
+#define TRACE
+
+using System.Diagnostics;
+
 using API;
 
 using FincertClient.Managers;
@@ -29,33 +33,124 @@ internal class Program
 
     static async Task Main(string[] args)
     {
+        // defaults
+        bool checklist = false;
+        int limit = 100;
+        long offset = 0;
+
         Console.WriteLine("Hello, World!"); // :)
 
-        // Подключиться к АСОИ ФинЦЕРТ
-        if (!await TlsClient.Login(_config.Tls))
-        {
-            Console.WriteLine("Ошибка подключения к серверу.");
-            Environment.Exit(1);
-        }
+        // Console Trace
+        using ConsoleTraceListener ConTracer = new() { Name = nameof(ConTracer) };
+        Trace.Listeners.Add(ConTracer);
 
-        if (args.Length > 0 && args.Contains("-checklist"))
-        {
-            await BulletinsManager.GetCheckList(
-                Path.Combine(_config.BulletinsDownloads, "CheckList"));
-        }
+        // Log Trace
+        string log = Helper.GetLogFile(_config.Logs);
+        using TextWriterTraceListener FileTracer = new(log, nameof(FileTracer));
+        Trace.Listeners.Add(FileTracer);
+        Trace.AutoFlush = true;
 
-        if (_config.Feeds)
+        try
         {
-            await FeedsManager.LoadFeeds(_config.FeedsDownloads);
-        }
+            // Опциональные параметры
+            for (int i = 0; i < args.Length; i++)
+            {
+                string cmd = args[i];
 
-        if (_config.Bulletins)
+                switch (cmd.ToLower())
+                {
+                    case "-checklist":
+                        checklist = true;
+                        Trace.WriteLine(cmd);
+                        break;
+
+                    case "-limit":
+                        if (args.Length > i)
+                            limit = int.Parse(args[++i]);
+                        Trace.WriteLine($"{cmd} {limit}");
+                        break;
+
+                    case "-offset":
+                        if (args.Length > i)
+                            offset = long.Parse(args[++i]);
+                        Trace.WriteLine($"{cmd} {offset}");
+                        break;
+
+                    default:
+                        Trace.WriteLine($"Непонятная команда '{cmd}'.");
+                        Environment.Exit(1);
+                        break;
+                }
+            }
+
+            // Конфиг
+            Trace.WriteLine("Получение учетных данных...");
+            var tls = _config.Tls;
+
+            if (string.IsNullOrEmpty(tls.Password))
+            {
+                string entry = "FinCERT";
+                Trace.WriteLine($"Пароль пуст - получение от Windows ('{entry}').");
+                var cred = CredentialManager.ReadCredential(entry);
+                tls.Login = cred.UserName ?? string.Empty;
+                tls.Password = cred.Password ?? string.Empty;
+            }
+
+            // Подключиться к АСОИ ФинЦЕРТ
+            Trace.WriteLine($"{DateTime.Now:T} Login...");
+
+            if (!await TlsClient.Login(tls))
+            {
+                Trace.WriteLine("Ошибка подключения к серверу.");
+                Environment.Exit(1);
+            }
+
+            // Скачать комплект файлов для чек-листа
+            if (checklist)
+            {
+                await BulletinsManager.GetCheckList(
+                    Path.Combine(_config.BulletinsDownloads, "CheckList"));
+                Environment.Exit(0);
+            }
+
+            // Скачать фиды
+            if (_config.Feeds)
+            {
+                await FeedsManager.LoadFeeds(_config.FeedsDownloads);
+            }
+
+            // Скачать бюллетени
+            if (_config.Bulletins)
+            {
+                // Неполноценный вариант с загрузкой только основного файла
+                // await BulletinsManager.LoadBulletinsList(_config.BulletinsDownloads, limit, offset);
+
+                // Полноценный вариант с загрузкой основного и дополнительных файлов
+                await BulletinsManager.LoadBulletinsDirs(_config.BulletinsDownloads, limit, offset);
+            }
+
+            // Завершить работу с АСОИ ФинЦЕРТ
+            Trace.WriteLine($"{DateTime.Now:T} Logout...");
+
+            if (await TlsClient.LogoutAsync())
+            {
+                Trace.WriteLine("end.");
+                Environment.Exit(0);
+            }
+            else
+            {
+                Trace.WriteLine("Ошибка завершения сеанса.");
+                Environment.Exit(1);
+            }
+        }
+        catch (Exception ex)
         {
-            await BulletinsManager.LoadBulletinsList(_config.BulletinsDownloads);
-            await BulletinsManager.LoadBulletinsDirs(_config.BulletinsDownloads);
+            Helper.TraceError("Program Error", ex);
+            Environment.Exit(4);
         }
-
-        // Завершить работу с АСОИ ФинЦЕРТ
-        Environment.Exit(await TlsClient.LogoutAsync() ? 0 : 1);
+        finally
+        {
+            Trace.Listeners.Clear();
+        }
     }
 }

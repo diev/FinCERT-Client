@@ -15,6 +15,7 @@
     <Authors>Diev</Authors>
     <PackageProjectUrl>https://github.com/diev/FinCERT-Client</PackageProjectUrl>
     <RepositoryUrl>https://github.com/diev/FinCERT-Client.git</RepositoryUrl>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

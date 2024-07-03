@@ -17,6 +17,7 @@ limitations under the License.
 */
 #endregion
 
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace FincertClient.Managers;
@@ -46,7 +47,7 @@ internal static class ConfigManager
             using var write = File.OpenWrite(appsettings);
             JsonSerializer.Serialize(write, new Config(), GetJsonOptions());
 
-            Console.WriteLine(@$"Создан новый файл настроек ""{appsettings}"" - откорректируйте его.");
+            Trace.WriteLine(@$"Создан новый файл настроек ""{appsettings}"" - откорректируйте его.");
             throw new Exception();
         }
         catch

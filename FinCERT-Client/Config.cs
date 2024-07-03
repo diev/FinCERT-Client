@@ -50,4 +50,9 @@ public class Config
     /// Папка для сохранения полученных файлов бюллетеней.
     /// </summary>
     public string BulletinsDownloads { get; set; } = nameof(BulletinsDownloads);
+
+    /// <summary>
+    /// Папка для ведения логов.
+    /// </summary>
+    public string Logs { get; set; } = nameof(Logs);
 }

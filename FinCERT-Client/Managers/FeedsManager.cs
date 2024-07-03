@@ -17,6 +17,8 @@ limitations under the License.
 */
 #endregion
 
+using System.Diagnostics;
+
 using API;
 
 using static API.Feeds;
@@ -27,10 +29,9 @@ internal static class FeedsManager
 {
     public static async Task LoadFeeds(string path)
     {
-        Console.WriteLine("Получение фидов...");
+        Trace.WriteLine("Получение фидов...");
 
-        if (!string.IsNullOrEmpty(path))
-            Directory.CreateDirectory(path);
+        Directory.CreateDirectory(path);
 
         foreach (var feed in Enum.GetValues<FeedType>())
         {
@@ -39,7 +40,7 @@ internal static class FeedsManager
 
             if (status is null)
             {
-                Console.WriteLine($"Статус {feed} не получен.");
+                Trace.WriteLine($"Статус {feed} не получен.");
                 continue;
             }
 
@@ -52,12 +53,12 @@ internal static class FeedsManager
             */
 
             var date = DateTime.Parse(status.UploadDatetime);
-            Console.WriteLine($"{date:g} {feed}");
+            Trace.WriteLine($"{date:g} {feed}");
 
             // Выгрузить из АСОИ ФинЦЕРТ нужный тип фидов
             if (!await DownloadFeedsAsync(feed, path))
             {
-                Console.WriteLine($"Содержимое {feed} не получено.");
+                Trace.WriteLine($"Содержимое {feed} не получено.");
                 continue;
             }
         }
