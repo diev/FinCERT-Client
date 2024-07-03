@@ -1,16 +1,23 @@
 @echo off
-set src=FeedsAPI
-
 for %%i in (.) do (
  set repo=%%~nxi
 )
+
+call :build FeedsAPI FinCERT-Client
+exit /b 0
+
+:build
+if exist bin rd /s /q bin
+if /%1/==// goto :eof
+if not exist %1 goto next
+set src=%1
+
+echo build %1
 
 for %%i in (%src%\*.csproj) do (
  set prj=%%~dpnxi
  set app=%%~ni
 )
-
-if exist bin rd /s /q bin
 
 rem Build an app with many dlls (default)
 rem dotnet publish %prj% -o bin
@@ -41,14 +48,15 @@ if exist %pack% del %pack%
 
 call :version_txt > bin\version.txt
 
-"C:\Program Files\7-Zip\7z.exe" a %pack% LICENSE *.md *.sln *.cmd bin\ Templates\ XLSM\
+"C:\Program Files\7-Zip\7z.exe" a %pack% LICENSE *.md *.sln *.cmd bin\
 "C:\Program Files\7-Zip\7z.exe" a %pack% -r -x!.* -x!bin -x!obj -x!PublishProfiles -x!*.user %src%\
 
 set store=G:\BankApps\AppStore
 if exist %store% copy /y %pack% %store%
 
-endlocal
-exit /b 0
+:next
+shift
+goto build
 
 :lower
 echo>%Temp%\%2
@@ -67,6 +75,9 @@ echo.
 echo Requires SDK .NET 8.0 to build
 echo Requires .NET Desktop Runtime 8.0 to run
 echo Download from https://dotnet.microsoft.com/download
+echo.
+echo Run once to create %app%.config.json
+echo and correct it
 echo.
 echo https://github.com/diev/%repo%
 echo https://gitverse.ru/diev/%repo%
