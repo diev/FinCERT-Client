@@ -52,7 +52,7 @@ internal static class Feeds
     /// Функция получения фидов в формате CSV.
     /// </summary>
     /// <param name="feed">Тип фидов.</param>
-    /// <param name="path">Имя файла для сохранения фидов.</param>
+    /// <param name="path">Путь для сохранения фидов.</param>
     /// <returns>Файл сохранен.</returns>
     public static async Task<bool> DownloadFeedsAsync(FeedType feed, string path)
     {
@@ -63,10 +63,25 @@ internal static class Feeds
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                using var output = File.Create(path);
+                string name = feed switch
+                {
+                    FeedType.accountNumber => "account_number",
+                    FeedType.cardNumber    => "card_number",
+                    FeedType.ewalletNumber => "ewallet_number",
+                    FeedType.fastPayNumber => "fastpay_number",
+                    FeedType.hashPassport  => "passport_hash",
+                    FeedType.hashSnils     => "snils_hash",
+                    FeedType.inn           => "inn",
+                    FeedType.phoneNumber   => "phone_number",
+                    FeedType.swift         => "swift",
+                    _ => feed.ToString()
+                };
+
+                string file = Path.Combine(path, name + ".csv");
+                using var output = File.Create(file);
                 await response.Content.CopyToAsync(output);
                 output.Close();
-                return File.Exists(path);
+                return File.Exists(file);
             }
         }
         catch { }

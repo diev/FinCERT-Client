@@ -19,9 +19,9 @@ limitations under the License.
 
 using System.Text.Json;
 
-namespace FincertClient;
+namespace FincertClient.Managers;
 
-public static class ConfigManager
+internal static class ConfigManager
 {
     private static JsonSerializerOptions GetJsonOptions()
     {

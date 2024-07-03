@@ -59,6 +59,32 @@ internal static class Bulletins
     }
 
     /// <summary>
+    /// Функция получения списка бюллетений в файл.
+    /// </summary>
+    /// <param name="path">Путь для сохранения файла.</param>
+    /// <param name="limit">Количество (1-100).</param>
+    /// <param name="offset">Смещение по списку.</param>
+    /// <returns>Файл сохранен.</returns>
+    public static async Task<bool> GetBulletinIdsAsync(string path, int limit = 100, long offset = 0)
+    {
+        try
+        {
+            var response = await TlsClient.GetAsync($"bulletins?limit={limit}&offset={offset}");
+            response.EnsureSuccessStatusCode();
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                using var output = File.Create(path);
+                await response.Content.CopyToAsync(output);
+                output.Close();
+                return File.Exists(path);
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    /// <summary>
     /// Функция получения массива информации по списку бюллетеней.
     /// </summary>
     /// <param name="ids">Массив идентификаторов.</param>
@@ -80,6 +106,31 @@ internal static class Bulletins
     }
 
     /// <summary>
+    /// Функция получения массива информации по списку бюллетеней в файл.
+    /// </summary>
+    /// <param name="ids">Массив идентификаторов.</param>
+    /// <param name="path">Путь для сохранения файла.</param>
+    /// <returns>Файл сохранен.</returns>
+    public static async Task<bool> GetBulletinInfosAsync(string[] ids, string path)
+    {
+        try
+        {
+            var response = await TlsClient.PostAsJsonAsync("bulletins/list", new BulletinList(ids));
+            response.EnsureSuccessStatusCode();
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                using var output = File.Create(path);
+                await response.Content.CopyToAsync(output);
+                output.Close();
+                return File.Exists(path);
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    /// <summary>
     /// Функция получения информации по идентификатору бюллетеня.
     /// </summary>
     /// <param name="id">Идентификатор бюллетеня.</param>
@@ -98,6 +149,31 @@ internal static class Bulletins
         }
         catch { }
         return null;
+    }
+
+    /// <summary>
+    /// Функция получения информации по идентификатору бюллетеня в файл.
+    /// </summary>
+    /// <param name="id">Идентификатор бюллетеня.</param>
+    /// <param name="path">Путь для сохранения файла.</param>
+    /// <returns>Файл сохранен.</returns>
+    public static async Task<bool> GetBulletinAttachInfoAsync(string id, string path)
+    {
+        try
+        {
+            var response = await TlsClient.GetAsync($"bulletins/{id}");
+            response.EnsureSuccessStatusCode();
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                using var output = File.Create(path);
+                await response.Content.CopyToAsync(output);
+                output.Close();
+                return File.Exists(path);
+            }
+        }
+        catch { }
+        return false;
     }
 
     /// <summary>
