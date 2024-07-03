@@ -2,11 +2,21 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/hpsbfj3qds34i4yb?svg=true)](https://ci.appveyor.com/project/diev/fincert-client)
 [![GitHub Release](https://img.shields.io/github/release/diev/FinCERT-Client.svg)](https://github.com/diev/FinCERT-Client/releases/latest)
 
-Получение фидов из FinCERT Банка России.
+Получение по API фидов и бюллетеней из FinCERT Банка России.
+
+Здесь два проекта:
+
+* FeedsAPI - Обновленный до NET8 референсный проект для скачивания
+фидов с добавлением двусторонней аутентификации TLS, которой в нем не было.
+* FinCERT-Client - Новый проект с добавлением Bulletins API -
+возможность скачивать бюллетени и файлы к ним - в дополнение к фидам.
 
 ## Requirements
 
 * .NET 8
+* CryptoPro CSP
+* Сертификат TLS клиента
+* Логин и пароль
 
 ## Versioning
 
