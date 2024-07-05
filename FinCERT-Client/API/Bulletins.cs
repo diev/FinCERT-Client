@@ -17,22 +17,57 @@ limitations under the License.
 */
 #endregion
 
-using System.Net;
 using System.Net.Http.Json;
+
+using TLS;
 
 namespace API;
 
 // JSON-структуры
-public record BulletinId(string Id);
-public record BulletinIds(int Total, BulletinId[] Items);
-public record BulletinList(string[] Ids);
-public record BulletinInfo(string Id, string Hrid, string Header, string Description,
-    string PublishedDate, string AttachmentId, string Type, string Subtype);
-public record BulletinInfos(int Total, BulletinInfo[] Items);
-public record BulletinAttachInfo(string Id, string Hrid, string Header, string Description,
-    BulletinAttachment Attachment, BulletinAttachment[] AdditionalAttachments,
-    string PublishedDate, string Type, string Subtype);
-public record BulletinAttachment(string Id, string Name, int Size, string Url);
+#region Records
+
+public record BulletinId(
+    string Id);
+
+public record BulletinIds(
+    int Total,
+    BulletinId[] Items);
+
+public record BulletinList(
+    string[] Ids);
+
+public record BulletinInfo(
+    string Id,
+    string Hrid,
+    string Header,
+    string Description,
+    string PublishedDate,
+    string AttachmentId,
+    string Type,
+    string Subtype);
+
+public record BulletinInfos(
+    int Total,
+    BulletinInfo[] Items);
+
+public record BulletinAttachInfo(
+    string Id,
+    string Hrid,
+    string Header,
+    string Description,
+    BulletinAttachment Attachment,
+    BulletinAttachment[] AdditionalAttachments,
+    string PublishedDate,
+    string Type,
+    string Subtype);
+
+public record BulletinAttachment(
+    string Id,
+    string Name,
+    int Size,
+    string Url);
+
+#endregion Records
 
 internal static class Bulletins
 {
@@ -42,20 +77,13 @@ internal static class Bulletins
     /// <param name="limit">Количество (1-100).</param>
     /// <param name="offset">Смещение по списку.</param>
     /// <returns>JSON-структура со списком бюллетеней.</returns>
-    public static async Task<BulletinIds?> GetBulletinIdsAsync(int limit = 100, long offset = 0)
+    public static async Task<BulletinIds> GetBulletinIdsAsync(int limit = 100, long offset = 0)
     {
-        try
-        {
-            var response = await TlsClient.GetAsync($"bulletins?limit={limit}&offset={offset}");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return await response.Content.ReadFromJsonAsync<BulletinIds>();
-            }
-        }
-        catch { }
-        return null;
+        string url = $"bulletins?limit={limit}&offset={offset}";
+        var response = await TlsClient.GetAsync(url);
+        return await response.Content.ReadFromJsonAsync<BulletinIds>()
+            ?? throw new BulletinsException(
+                "Список бюллетеней не получен.");
     }
 
     /// <summary>
@@ -64,24 +92,12 @@ internal static class Bulletins
     /// <param name="path">Путь для сохранения файла.</param>
     /// <param name="limit">Количество (1-100).</param>
     /// <param name="offset">Смещение по списку.</param>
-    /// <returns>Файл сохранен.</returns>
-    public static async Task<bool> GetBulletinIdsAsync(string path, int limit = 100, long offset = 0)
+    public static async Task GetBulletinIdsAsync(string path, int limit = 100, long offset = 0)
     {
-        try
-        {
-            var response = await TlsClient.GetAsync($"bulletins?limit={limit}&offset={offset}");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                using var output = File.Create(path);
-                await response.Content.CopyToAsync(output);
-                output.Close();
-                return File.Exists(path);
-            }
-        }
-        catch { }
-        return false;
+        string url = $"bulletins?limit={limit}&offset={offset}";
+        var response = await TlsClient.GetAsync(url);
+        using var output = File.Create(path);
+        await response.Content.CopyToAsync(output);
     }
 
     /// <summary>
@@ -89,20 +105,14 @@ internal static class Bulletins
     /// </summary>
     /// <param name="ids">Массив идентификаторов.</param>
     /// <returns>Массив информации.</returns>
-    public static async Task<BulletinInfos?> GetBulletinInfosAsync(string[] ids)
+    public static async Task<BulletinInfos> GetBulletinInfosAsync(string[] ids)
     {
-        try
-        {
-            var response = await TlsClient.PostAsJsonAsync("bulletins/list", new BulletinList(ids));
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return await response.Content.ReadFromJsonAsync<BulletinInfos>();
-            }
-        }
-        catch { }
-        return null;
+        string url = "bulletins/list";
+        var content = new BulletinList(ids);
+        var response = await TlsClient.PostAsJsonAsync(url, content);
+        return await response.Content.ReadFromJsonAsync<BulletinInfos>()
+            ?? throw new BulletinsException(
+                "Информация по бюллетеням не получена.");
     }
 
     /// <summary>
@@ -110,24 +120,13 @@ internal static class Bulletins
     /// </summary>
     /// <param name="ids">Массив идентификаторов.</param>
     /// <param name="path">Путь для сохранения файла.</param>
-    /// <returns>Файл сохранен.</returns>
-    public static async Task<bool> GetBulletinInfosAsync(string[] ids, string path)
+    public static async Task GetBulletinInfosAsync(string[] ids, string path)
     {
-        try
-        {
-            var response = await TlsClient.PostAsJsonAsync("bulletins/list", new BulletinList(ids));
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                using var output = File.Create(path);
-                await response.Content.CopyToAsync(output);
-                output.Close();
-                return File.Exists(path);
-            }
-        }
-        catch { }
-        return false;
+        string url = "bulletins/list";
+        var content = new BulletinList(ids);
+        var response = await TlsClient.PostAsJsonAsync(url, content);
+        using var output = File.Create(path);
+        await response.Content.CopyToAsync(output);
     }
 
     /// <summary>
@@ -135,20 +134,13 @@ internal static class Bulletins
     /// </summary>
     /// <param name="id">Идентификатор бюллетеня.</param>
     /// <returns>Полная информация по бюллетеню.</returns>
-    public static async Task<BulletinAttachInfo?> GetBulletinAttachInfoAsync(string id)
+    public static async Task<BulletinAttachInfo> GetBulletinAttachInfoAsync(string id)
     {
-        try
-        {
-            var response = await TlsClient.GetAsync($"bulletins/{id}");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return await response.Content.ReadFromJsonAsync<BulletinAttachInfo>();
-            }
-        }
-        catch { }
-        return null;
+        string url = $"bulletins/{id}";
+        var response = await TlsClient.GetAsync(url);
+        return await response.Content.ReadFromJsonAsync<BulletinAttachInfo>()
+            ?? throw new BulletinsException(
+                $"Информация по бюллетеню '{id}' не получена.");
     }
 
     /// <summary>
@@ -156,24 +148,12 @@ internal static class Bulletins
     /// </summary>
     /// <param name="id">Идентификатор бюллетеня.</param>
     /// <param name="path">Путь для сохранения файла.</param>
-    /// <returns>Файл сохранен.</returns>
-    public static async Task<bool> GetBulletinAttachInfoAsync(string id, string path)
+    public static async Task GetBulletinAttachInfoAsync(string id, string path)
     {
-        try
-        {
-            var response = await TlsClient.GetAsync($"bulletins/{id}");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                using var output = File.Create(path);
-                await response.Content.CopyToAsync(output);
-                output.Close();
-                return File.Exists(path);
-            }
-        }
-        catch { }
-        return false;
+        string url = $"bulletins/{id}";
+        var response = await TlsClient.GetAsync(url);
+        using var output = File.Create(path);
+        await response.Content.CopyToAsync(output);
     }
 
     /// <summary>
@@ -181,23 +161,25 @@ internal static class Bulletins
     /// </summary>
     /// <param name="id">Идентификатор файла.</param>
     /// <param name="path">Путь для сохранения файла.</param>
-    /// <returns>Файл сохранен.</returns>
-    public static async Task<bool> DownloadAttachmentAsync(string id, string path)
+    public static async Task DownloadAttachmentAsync(string id, string path)
     {
-        try
-        {
-            var response = await TlsClient.GetAsync($"attachments/{id}/download");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                using var output = File.Create(path);
-                await response.Content.CopyToAsync(output);
-                output.Close();
-                return File.Exists(path);
-            }
-        }
-        catch { }
-        return false;
+        string url = $"attachments/{id}/download";
+        var response = await TlsClient.GetAsync(url);
+        using var output = File.Create(path);
+        await response.Content.CopyToAsync(output);
     }
+}
+
+public class BulletinsException : Exception
+{
+    const string message = "Ошибка бюллетеней: ";
+
+    public BulletinsException()
+        : base() { }
+
+    public BulletinsException(string error)
+        : base(message + error) { }
+
+    public BulletinsException(string error, Exception inner)
+        : base(message + error, inner) { }
 }

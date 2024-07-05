@@ -227,3 +227,17 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CredFree(nint cred);
 }
+
+public class CredManagerException : Exception
+{
+    const string message = "'{0}' не указан в Диспетчере учетных данных Windows.";
+
+    public CredManagerException()
+        : base() { }
+
+    public CredManagerException(string paramName)
+        : base(string.Format(message, paramName)) { }
+
+    public CredManagerException(string paramName, Exception inner)
+        : base(string.Format(message, paramName), inner) { }
+}

@@ -17,7 +17,7 @@ limitations under the License.
 */
 #endregion
 
-using API;
+using TLS;
 
 namespace FincertClient;
 
@@ -27,32 +27,67 @@ namespace FincertClient;
 public class Config
 {
     /// <summary>
+    /// Признак нового файла - надо удалить или отключить его
+    /// для начала использования программой.
+    /// </summary>
+    public bool NewConfig { get; set; }
+
+    /// <summary>
     /// Секция настройки TLS.
     /// </summary>
-    public TlsConfig Tls { get; set; } = new();
+    public TlsConfig? Tls { get; set; }
 
     /// <summary>
     /// Загружать фиды.
     /// </summary>
-    public bool Feeds { get; set; } = true;
+    public bool Feeds { get; set; }
 
     /// <summary>
     /// Папка для сохранения полученных файлов фидов.
     /// </summary>
-    public string FeedsDownloads { get; set; } = nameof(FeedsDownloads);
+    public string? FeedsDownloads { get; set; }
 
     /// <summary>
     /// Загружать бюллетени.
     /// </summary>
-    public bool Bulletins { get; set; } = true;
+    public bool Bulletins { get; set; }
 
     /// <summary>
     /// Папка для сохранения полученных файлов бюллетеней.
     /// </summary>
-    public string BulletinsDownloads { get; set; } = nameof(BulletinsDownloads);
+    public string? BulletinsDownloads { get; set; }
+
+    /// <summary>
+    /// Папка 1 для сохранения полученных файлов фидов МВД.
+    /// </summary>
+    public string? MvdDownloads1 { get; set; }
+
+    /// <summary>
+    /// Папка 2 для сохранения полученных файлов фидов МВД.
+    /// </summary>
+    public string? MvdDownloads2 { get; set; }
 
     /// <summary>
     /// Папка для ведения логов.
     /// </summary>
-    public string Logs { get; set; } = nameof(Logs);
+    public string? Logs { get; set; }
+
+    public Config() { }
+
+    public Config(bool newConfig)
+    {
+        NewConfig = newConfig;
+
+        Tls = new(newConfig);
+
+        Feeds = false;
+        FeedsDownloads = nameof(FeedsDownloads);
+
+        Bulletins = false;
+        BulletinsDownloads = nameof(BulletinsDownloads);
+        MvdDownloads1 = nameof(MvdDownloads1);
+        MvdDownloads2 = nameof(MvdDownloads2);
+
+        Logs = nameof(Logs);
+    }
 }

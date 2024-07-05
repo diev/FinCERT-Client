@@ -1,7 +1,20 @@
 {
   "profiles": {
-    "FinCERT-Client": {
-      "commandName": "Project"
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "FinCERT limit": {
+      "commandName": "Project",
+      "commandLineArgs": "-limit 4"
+    },
+    "FinCERT checklist": {
+      "commandName": "Project",
+      "commandLineArgs": "-checklist"
+    },
+    "FinCERT feeds": {
+      "commandName": "Project",
+      "commandLineArgs": "-feeds"
     }
   }
 }

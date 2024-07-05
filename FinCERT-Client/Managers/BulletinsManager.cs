@@ -18,6 +18,7 @@ limitations under the License.
 #endregion
 
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Text;
 
 using API;
@@ -34,44 +35,29 @@ internal static class BulletinsManager
     /// </summary>
     /// <param name="path">Путь к папке для формируемого комплекта.</param>
     /// <param name="limit">Ограничение на несколько записей для примера (4).</param>
-    /// <returns>Комплект получен.</returns>
-    public static async Task<bool> GetCheckList(string path, int limit = 4)
+    public static async Task GetCheckList(string path, int limit = 4)
     {
-        try
-        {
-            Directory.CreateDirectory(path);
+        Directory.CreateDirectory(path);
 
-            // Получить id бюллетеней.
-            var ids = await GetBulletinIdsAsync(limit);
+        // Получить id бюллетеней.
+        var ids = await GetBulletinIdsAsync(limit);
+        await GetBulletinIdsAsync(Path.Combine(path, "1.json"), limit);
 
-            if (ids is null) return false;
+        // Получить информации о нескольких бюллетенях.
+        int count = ids.Items.Length;
+        string[] ids2 = new string[count];
 
-            await GetBulletinIdsAsync(Path.Combine(path, "1.json"), limit);
+        for (int i = 0; i < count; i++)
+            ids2[i] = ids.Items[i].Id;
 
-            // Получить информации о нескольких бюллетенях.
-            int count = ids.Items.Length;
-            string[] ids2 = new string[count];
+        await GetBulletinInfosAsync(ids2, Path.Combine(path, "2.json"));
 
-            for (int i = 0; i < count; i++)
-            {
-                ids2[i] = ids.Items[i].Id;
-            }
+        // Получить информации об одном бюллетене.
+        var id = ids2[0];
+        await GetBulletinAttachInfoAsync(id, Path.Combine(path, "3.json"));
 
-            var infos = await GetBulletinInfosAsync(ids2);
-            await GetBulletinInfosAsync(ids2, Path.Combine(path, "2.json"));
-
-            // Получить информации об одном бюллетене.
-            var id = ids2[0];
-            var info = await GetBulletinAttachInfoAsync(id);
-            await GetBulletinAttachInfoAsync(id, Path.Combine(path, "3.json"));
-
-            // Скачать несколько бюллетеней, приложить файлы к форме.
-            await LoadBulletinsDirs(path, limit);
-
-            return true;
-        }
-        catch { }
-        return false;
+        // Скачать несколько бюллетеней, приложить файлы к форме.
+        await LoadBulletinsDirs(path, limit);
     }
 
     /// <summary>
@@ -85,74 +71,48 @@ internal static class BulletinsManager
     /// Если он существует, то он будет перезаписан.</param>
     /// <param name="limit">Ограничение на число бюллетеней (1-100), максимум 100.</param>
     /// <param name="offset">Смещение по списку бюллетеней вглубь истории (0 - без смещения).</param>
-    /// <returns>Процесс дошел до конца.</returns>
-    public static async Task<bool> LoadBulletinsList(string path, int limit = 100, long offset = 0)
+    public static async Task LoadBulletinsList(string path, int limit = 100, long offset = 0)
     {
-        try
+        Directory.CreateDirectory(path);
+
+        Trace.WriteLine("Получение бюллетеней списком...");
+
+        var ids = await GetBulletinIdsAsync(limit, offset);
+        int count = ids.Items.Length;
+        string[] ids2 = new string[count];
+
+        Trace.WriteLine($"Всего: {ids.Total}, в листе: {count}.");
+
+        for (int i = 0; i < count; i++)
+            ids2[i] = ids.Items[i].Id;
+
+        var BulletinInfos = await GetBulletinInfosAsync(ids2);
+        StringBuilder sb = new();
+
+        foreach (var bulletin in BulletinInfos.Items)
         {
-            Directory.CreateDirectory(path);
+            var id = bulletin.Id;
+            var date = DateTime.Parse(bulletin.PublishedDate);
 
-            Trace.WriteLine("Получение бюллетеней списком...");
+            sb.AppendLine(new string('-', 36))
+                .AppendLine(id)
+                .AppendLine($"Дата публикации: {date:g}")
+                .AppendLine($"Идентификатор:   {bulletin.Hrid}")
+                .AppendLine($"Заголовок:       {bulletin.Header}")
+                .AppendLine($"Тип рассылки:    {bulletin.Type}")
+                .AppendLine($"Подтип рассылки: {bulletin.Subtype}");
 
-            var ids = await GetBulletinIdsAsync(limit, offset);
+            if (bulletin.AttachmentId != null)
+                sb.AppendLine($"Файл рассылки:   {bulletin.AttachmentId}");
 
-            if (ids is null)
-            {
-                Trace.WriteLine("Список бюллетеней не получен.");
-                Environment.Exit(1);
-            }
-
-            int count = ids.Items.Length;
-            string[] ids2 = new string[count];
-
-            Trace.WriteLine($"Всего: {ids.Total}, в листе: {count}.");
-
-            for (int i = 0; i < count; i++)
-            {
-                ids2[i] = ids.Items[i].Id;
-            }
-
-            var BulletinInfos = await GetBulletinInfosAsync(ids2);
-            StringBuilder sb = new();
-
-            if (BulletinInfos is null)
-            {
-                Trace.WriteLine("Список информации по бюллетеням не получен.");
-                Environment.Exit(1);
-            }
-
-            foreach (var bulletin in BulletinInfos.Items)
-            {
-                var id = bulletin.Id;
-                var date = DateTime.Parse(bulletin.PublishedDate);
-
-                sb.AppendLine(new string('-', 36))
-                    .AppendLine(id)
-                    .AppendLine($"Дата публикации: {date:g}")
-                    .AppendLine($"Идентификатор:   {bulletin.Hrid}")
-                    .AppendLine($"Заголовок:       {bulletin.Header}")
-                    .AppendLine($"Тип рассылки:    {bulletin.Type}")
-                    .AppendLine($"Подтип рассылки: {bulletin.Subtype}");
-
-                if (bulletin.AttachmentId != null)
-                {
-                    sb.AppendLine($"Файл рассылки:   {bulletin.AttachmentId}");
-                    //string name = "attachment.dat";
-                    //await Bulletins.DownloadAttachmentAsync(bulletin.AttachmentId, PathCombine(dir, name));
-                }
-
-                sb.AppendLine($"Описание:        {bulletin.Description}");
-            }
-
-            string text = sb.ToString();
-            string file = Path.Combine(path, "Bulletins.txt");
-            await File.WriteAllTextAsync(file, text);
-
-            Console.WriteLine(text);
-            return true;
+            sb.AppendLine($"Описание:        {bulletin.Description}");
         }
-        catch { }
-        return false;
+
+        string text = sb.ToString();
+        string file = Path.Combine(path, "Bulletins.txt");
+        await File.WriteAllTextAsync(file, text);
+
+        Console.WriteLine(text);
     }
 
     /// <summary>
@@ -162,92 +122,114 @@ internal static class BulletinsManager
     /// <param name="path">Путь к папке для скачиваний.</param>
     /// <param name="limit">Ограничение на число бюллетеней (1-100), максимум 100.</param>
     /// <param name="offset">Смещение по списку бюллетеней вглубь истории (0 - без смещения).</param>
-    /// <returns>Процесс дошел до конца.</returns>
-    public static async Task<bool> LoadBulletinsDirs(string path, int limit = 100, long offset = 0)
+    public static async Task LoadBulletinsDirs(string path, int limit = 100, long offset = 0)
     {
-        try
+        string lastMvdZip = "feeds_20240101-01.zip";
+
+        Directory.CreateDirectory(path);
+
+        Trace.WriteLine("Получение бюллетеней по папкам...");
+
+        var ids = await GetBulletinIdsAsync(limit, offset);
+
+        Trace.WriteLine($"Всего: {ids.Total}, в листе: {ids.Items.Length}.");
+
+        foreach (var itemId in ids.Items)
         {
-            Directory.CreateDirectory(path);
+            var id = itemId.Id;
+            var bulletin = await GetBulletinAttachInfoAsync(id);
+            var date = DateTime.Parse(bulletin!.PublishedDate);
 
-            Trace.WriteLine("Получение бюллетеней по папкам...");
+            // Генератор имени папки - не изменяйте его, чтобы не скачать заново лишнее!
 
-            var ids = await GetBulletinIdsAsync(limit, offset);
+            var name = CorrectName($"{date:yyyy-MM-dd HHmm} {bulletin.Hrid.Trim()}");
+            var dir = Path.Combine(path, name);
 
-            if (ids is null)
+            // Встречена ранее скачанная папка
+            if (Directory.Exists(dir))
             {
-                Trace.WriteLine("Список бюллетеней не получен.");
-                Environment.Exit(1);
+                if (offset == 0)
+                {
+                    // Скачивание прекращается
+                    Trace.WriteLine($"{name} // конец скачивания.");
+                    break;
+                }
+                else
+                {
+                    // Ранее скачанная папка пропускается
+                    Trace.WriteLine($"{name} // есть");
+                    continue;
+                }
             }
 
-            Trace.WriteLine($"Всего: {ids.Total}, в листе: {ids.Items.Length}.");
+            // Создается новая папка
+            Trace.WriteLine(name);
+            Directory.CreateDirectory(dir);
 
-            foreach (var itemId in ids.Items)
+            StringBuilder sb = new();
+            sb.AppendLine(id)
+                .AppendLine($"Дата публикации: {date:g}")
+                .AppendLine($"Идентификатор:   {bulletin.Hrid}")
+                .AppendLine($"Заголовок:       {bulletin.Header}")
+                .AppendLine($"Тип рассылки:    {bulletin.Type}")
+                .AppendLine($"Подтип рассылки: {bulletin.Subtype}");
+
+            if (bulletin.Attachment != null)
             {
-                var id = itemId.Id;
-                var bulletin = await GetBulletinAttachInfoAsync(id);
-                var date = DateTime.Parse(bulletin!.PublishedDate);
+                string filename = bulletin.Attachment.Name;
+                sb.AppendLine($"Файл рассылки:   {filename}");
+                string attach = Path.Combine(dir, filename);
+                await DownloadAttachmentAsync(bulletin.Attachment.Id, attach);
 
-                // Генератор имени папки - не изменяйте его, чтобы не скачать заново лишнее!
+                // Идентификатор:   FinCERT-20240703-03-FEEDS
+                // Заголовок:       Фиды на блокировку
+                // Тип рассылки:    Bulletin
+                // Подтип рассылки: Фиды на блокировку
+                // Файл рассылки:   feeds_20240703-03.zip
 
-                var name = CorrectName($"{date:yyyy-MM-dd HHmm} {bulletin.Hrid.Trim()}");
-                var dir = Path.Combine(path, name);
-
-                // Встречена ранее скачанная папка
-                if (Directory.Exists(dir))
+                if (filename.StartsWith("feeds_20", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (offset == 0)
+                    if (string.Compare(filename, lastMvdZip, true) > 0) //TODO
                     {
-                        // Скачивание прекращается
-                        Trace.WriteLine($"{name} // конец скачивания.");
-                        break;
+                        Trace.WriteLine($"Получен фид МВД '{filename}'");
+
+                        lastMvdZip = filename;
+                        string dir1 = Program.Config.MvdDownloads1!; //TODO
+
+                        if (!dir1.Equals(string.Empty))
+                            Directory.CreateDirectory(dir1);
+
+                        ZipFile.ExtractToDirectory(attach, dir1, true);
+
+                        string dir2 = Program.Config.MvdDownloads2!; //TODO
+
+                        if (!dir2.Equals(dir1))
+                        {
+                            if (!dir2.Equals(string.Empty))
+                                Directory.CreateDirectory(dir2);
+
+                            ZipFile.ExtractToDirectory(attach, dir2, true);
+                        }
                     }
-                    else
-                    {
-                        // Ранее скачанная папка пропускается
-                        Trace.WriteLine($"{name} // есть");
-                        continue;
-                    }
                 }
-
-                // Создается новая папка
-                Trace.WriteLine(name);
-                Directory.CreateDirectory(dir);
-
-                StringBuilder sb = new();
-                sb.AppendLine(id)
-                    .AppendLine($"Дата публикации: {date:g}")
-                    .AppendLine($"Идентификатор:   {bulletin.Hrid}")
-                    .AppendLine($"Заголовок:       {bulletin.Header}")
-                    .AppendLine($"Тип рассылки:    {bulletin.Type}")
-                    .AppendLine($"Подтип рассылки: {bulletin.Subtype}");
-
-                if (bulletin.Attachment != null)
-                {
-                    string filename = bulletin.Attachment.Name;
-                    sb.AppendLine($"Файл рассылки:   {filename}");
-                    await DownloadAttachmentAsync(bulletin.Attachment.Id, Path.Combine(dir, filename));
-                }
-
-                int i = 0;
-                foreach (var additional in bulletin.AdditionalAttachments)
-                {
-                    string filename = additional.Name;
-                    sb.AppendLine($"Доп. файл {++i}:     {filename}");
-                    await DownloadAttachmentAsync(additional.Id, Path.Combine(dir, filename));
-                }
-
-                sb.AppendLine($"Описание:        {bulletin.Description}");
-
-                string text = sb.ToString();
-                string file = Path.Combine(dir, bulletin.Type + ".txt");
-                await File.WriteAllTextAsync(file, text);
-
-                Console.WriteLine(new string('-', 36));
-                Console.WriteLine(text);
             }
-            return true;
+
+            int i = 0;
+            foreach (var additional in bulletin.AdditionalAttachments)
+            {
+                string filename = additional.Name;
+                sb.AppendLine($"Доп. файл {++i}:     {filename}");
+                await DownloadAttachmentAsync(additional.Id, Path.Combine(dir, filename));
+            }
+
+            sb.AppendLine($"Описание:        {bulletin.Description}");
+
+            string text = sb.ToString();
+            string file = Path.Combine(dir, bulletin.Type + ".txt");
+            await File.WriteAllTextAsync(file, text);
+
+            Console.WriteLine(new string('-', 36));
+            Console.WriteLine(text);
         }
-        catch { }
-        return false;
     }
 }

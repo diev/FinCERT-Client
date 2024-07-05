@@ -17,13 +17,17 @@ limitations under the License.
 */
 #endregion
 
-using System.Net;
 using System.Net.Http.Json;
+
+using TLS;
 
 namespace API;
 
 // JSON-структуры
-public record FeedsStatus(string UploadDatetime, string Type, int Version);
+public record FeedsStatus(
+    string UploadDatetime,
+    string Type,
+    int Version);
 
 internal static class Feeds
 {
@@ -32,61 +36,56 @@ internal static class Feeds
     /// </summary>
     /// <param name="feed">Тип фидов.</param>
     /// <returns>JSON-структура, содержащая дату обновления фидов.</returns>
-    public static async Task<FeedsStatus?> GetFeedsStatusAsync(FeedType feed)
+    public static async Task<FeedsStatus> GetFeedsStatusAsync(FeedType feed)
     {
-        try
-        {
-            var response = await TlsClient.GetAsync($"antifraud/feeds/{feed}");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                return await response.Content.ReadFromJsonAsync<FeedsStatus>();
-            }
-        }
-        catch { }
-        return null;
+        string url = $"antifraud/feeds/{feed}";
+        var response = await TlsClient.GetAsync(url);
+        return await response.Content.ReadFromJsonAsync<FeedsStatus>()
+            ?? throw new FeedsException("Статус фидов не получен.");
     }
 
     /// <summary>
     /// Функция получения фидов в формате CSV.
     /// </summary>
     /// <param name="feed">Тип фидов.</param>
-    /// <param name="path">Путь для сохранения фидов.</param>
-    /// <returns>Файл сохранен.</returns>
-    public static async Task<bool> DownloadFeedsAsync(FeedType feed, string path)
+    /// <param name="path">Путь для сохранения файлов фидов.</param>
+    public static async Task DownloadFeedsAsync(FeedType feed, string path)
     {
-        try
+        Directory.CreateDirectory(path);
+
+        string url = $"antifraud/feeds/{feed}/download";
+        var response = await TlsClient.GetAsync(url);
+
+        string name = feed switch
         {
-            Directory.CreateDirectory(path);
+            FeedType.accountNumber => "account_number",
+            FeedType.cardNumber    => "card_number",
+            FeedType.ewalletNumber => "ewallet_number",
+            FeedType.fastPayNumber => "fastpay_number",
+            FeedType.hashPassport  => "passport_hash",
+            FeedType.hashSnils     => "snils_hash",
+            FeedType.inn           => "inn",
+            FeedType.phoneNumber   => "phone_number",
+            FeedType.swift         => "swift",
+            _ => feed.ToString()
+        };
 
-            var response = await TlsClient.GetAsync($"antifraud/feeds/{feed}/download");
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                string name = feed switch
-                {
-                    FeedType.accountNumber => "account_number",
-                    FeedType.cardNumber    => "card_number",
-                    FeedType.ewalletNumber => "ewallet_number",
-                    FeedType.fastPayNumber => "fastpay_number",
-                    FeedType.hashPassport  => "passport_hash",
-                    FeedType.hashSnils     => "snils_hash",
-                    FeedType.inn           => "inn",
-                    FeedType.phoneNumber   => "phone_number",
-                    FeedType.swift         => "swift",
-                    _ => feed.ToString()
-                };
-
-                string file = Path.Combine(path, name + ".csv");
-                using var output = File.Create(file);
-                await response.Content.CopyToAsync(output);
-                output.Close();
-                return File.Exists(file);
-            }
-        }
-        catch { }
-        return false;
+        string file = Path.Combine(path, name + ".csv");
+        using var output = File.Create(file);
+        await response.Content.CopyToAsync(output);
     }
+}
+
+public class FeedsException : Exception
+{
+    const string message = "Ошибка фидов: ";
+
+    public FeedsException()
+        : base() { }
+
+    public FeedsException(string error)
+        : base(message + error) { }
+
+    public FeedsException(string error, Exception inner)
+        : base(message + error, inner) { }
 }

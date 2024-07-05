@@ -27,6 +27,23 @@ namespace FincertClient.Managers;
 
 internal static class FeedsManager
 {
+    public static async Task<DateTime> GetUpdatedAsync(FeedType feed = FeedType.hashPassport)
+    {
+        /*
+        {
+            "uploadDatetime": "2024-07-01T13:00:12.253506+03:00",
+            "type": "inn",
+            "version": 1
+        }
+        */
+
+        var status = await GetFeedsStatusAsync(feed)
+            ?? throw new Exception(
+                $"Время обновления {feed} не получено.");
+
+        return DateTime.Parse(status.UploadDatetime);
+    }
+
     public static async Task LoadFeeds(string path)
     {
         Trace.WriteLine("Получение фидов...");
@@ -36,31 +53,12 @@ internal static class FeedsManager
         foreach (var feed in Enum.GetValues<FeedType>())
         {
             // Проверить дату публикации фидов
-            var status = await Feeds.GetFeedsStatusAsync(feed);
+            var date = await GetUpdatedAsync(feed);
 
-            if (status is null)
-            {
-                Trace.WriteLine($"Статус {feed} не получен.");
-                continue;
-            }
-
-            /*
-            {
-                "uploadDatetime": "2024-07-01T13:00:12.253506+03:00",
-                "type": "inn",
-                "version": 1
-            }
-            */
-
-            var date = DateTime.Parse(status.UploadDatetime);
             Trace.WriteLine($"{date:g} {feed}");
 
             // Выгрузить из АСОИ ФинЦЕРТ нужный тип фидов
-            if (!await DownloadFeedsAsync(feed, path))
-            {
-                Trace.WriteLine($"Содержимое {feed} не получено.");
-                continue;
-            }
+            await DownloadFeedsAsync(feed, path);
         }
     }
 }

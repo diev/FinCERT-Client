@@ -6,7 +6,7 @@
     <RootNamespace>FincertClient</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>8.2024.703</Version>
+    <Version>8.2024.705</Version>
     <Company>diev</Company>
     <Copyright>2022-2024 Dmitrii Evdokimov</Copyright>
     <Description>Получение фидов и бюллетеней из FinCERT Банка России.</Description>

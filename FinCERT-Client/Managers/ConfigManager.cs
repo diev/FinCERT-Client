@@ -17,7 +17,6 @@ limitations under the License.
 */
 #endregion
 
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace FincertClient.Managers;
@@ -34,27 +33,53 @@ internal static class ConfigManager
 
     public static Config Read()
     {
-        try
+        string appsettings = Path.ChangeExtension(Environment.ProcessPath!, ".config.json");
+
+        if (File.Exists(appsettings))
         {
-            string appsettings = Path.ChangeExtension(Environment.ProcessPath!, ".config.json");
+            using var read = File.OpenRead(appsettings);
+            var config = JsonSerializer.Deserialize<Config>(read);
 
-            if (File.Exists(appsettings))
-            {
-                using var read = File.OpenRead(appsettings);
-                return JsonSerializer.Deserialize<Config>(read)!;
-            }
+            if (config is null || config.NewConfig)
+                throw new NewConfigException(
+                    );
 
-            using var write = File.OpenWrite(appsettings);
-            JsonSerializer.Serialize(write, new Config(), GetJsonOptions());
-
-            Trace.WriteLine(@$"Создан новый файл настроек ""{appsettings}"" - откорректируйте его.");
-            throw new Exception();
-        }
-        catch
-        {
-            Environment.Exit(2);
+            return config;
         }
 
-        return new();
+        var newConfig = new Config(true);
+        using var write = File.OpenWrite(appsettings);
+        JsonSerializer.Serialize(write, newConfig, GetJsonOptions());
+
+        throw new NewConfigException(
+            @$"Создан новый файл настроек ""{appsettings}"".");
     }
+}
+
+internal class NewConfigException : Exception
+{
+    const string message = @"Необходимо откорректировать новый конфиг ""{0}"".";
+
+    public NewConfigException()
+        : base() { }
+
+    public NewConfigException(string config)
+        : base(string.Format(message, config)) { }
+
+    public NewConfigException(string config, Exception inner)
+        : base(string.Format(message, config), inner) { }
+}
+
+public class ConfigException : Exception
+{
+    const string message = "Параметр '{0}' не указан в конфиге.";
+
+    public ConfigException()
+        : base() { }
+
+    public ConfigException(string paramName)
+        : base(string.Format(message, paramName)) { }
+
+    public ConfigException(string paramName, Exception inner)
+        : base(string.Format(message, paramName), inner) { }
 }
