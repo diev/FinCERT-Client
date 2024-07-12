@@ -17,6 +17,7 @@ rem Build matrix
 rem 1 - Build an app with many dlls (default)
 rem 2 - Build a single-file app when NET [Desktop] runtime required (my favorite)
 rem 3 - Build a single-file app when no runtime required (NET embedded)
+rem 4 - Build an app with many dlls for Linux
 set option=2
 
 call :bin %1 %option% %prj% net6.0 x86
@@ -49,6 +50,7 @@ echo === Build %1 %4 %5 ===
 if /%2/==/1/ dotnet publish %3 -o bin\%4\%5 -f %4 -r win-%5
 if /%2/==/2/ dotnet publish %3 -o bin\%4\%5 -f %4 -r win-%5 -p:PublishSingleFile=true --no-self-contained
 if /%2/==/3/ dotnet publish %3 -o bin\%4\%5 -f %4 -r win-%5 -p:PublishSingleFile=true
+if /%2/==/4/ dotnet publish %3 -o bin\%4\%5 -f %4 -r linux-%5 --self-contained
 goto :eof
 
 :init

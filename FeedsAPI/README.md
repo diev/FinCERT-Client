@@ -50,6 +50,15 @@ read-only.
 
 Вариант Linux пока не тестировался, Stunnel программе не требуется.
 
+Пример сборки проекта под Linux (укажите нужную версию .NET) из папки
+с файлом FeedsAPI.csproj:
+
+    dotnet publish -r linux-x64 -f net6.0 --self-contained
+
+Запуск:
+
+    dotnet FeedsAPI.dll
+
 ## Versioning / Порядок версий
 
 Номер версии программы указывается по нарастающему принципу и строится

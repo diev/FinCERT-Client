@@ -134,7 +134,9 @@ internal class Program
             }
 
             var Password = Config.Tls.Password;
-            if (string.IsNullOrEmpty(Password))
+
+            if (OperatingSystem.IsWindows() &&
+                string.IsNullOrEmpty(Password))
             {
                 Trace.WriteLine($"Получение '{Login}' из Диспетчера учетных данных Windows.");
                 var cred = CredentialManager.ReadCredential(Login);

@@ -19,11 +19,11 @@ init:
     git config --global core.autocrlf input
 install:
 - ps: >-
-    $CommitDateTime = [datetime]::Parse($APPVEYOR_REPO_COMMIT_TIMESTAMP)
+    $CommitDateTime = [datetime]::Parse($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
 
     $BuildDate = $CommitDateTime.ToString('yyyy-MM-dd')
 
-    Update-AppveyorBuild -Version "$BuildDate.$APPVEYOR_BUILD_NUMBER"
+    Update-AppveyorBuild -Version "$BuildDate.$env:APPVEYOR_BUILD_NUMBER"
 build_script:
 - cmd: build.cmd
 artifacts:
