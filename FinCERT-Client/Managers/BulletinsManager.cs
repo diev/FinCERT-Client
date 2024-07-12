@@ -41,7 +41,7 @@ internal static class BulletinsManager
 
         // Получить id бюллетеней.
         var ids = await GetBulletinIdsAsync(limit);
-        await GetBulletinIdsAsync(Path.Combine(path, "1.json"), limit);
+        await GetBulletinIdsAsync(Path.Combine(path, "1-ids.json"), limit);
 
         // Получить информации о нескольких бюллетенях.
         int count = ids.Items.Length;
@@ -50,11 +50,11 @@ internal static class BulletinsManager
         for (int i = 0; i < count; i++)
             ids2[i] = ids.Items[i].Id;
 
-        await GetBulletinInfosAsync(ids2, Path.Combine(path, "2.json"));
+        await GetBulletinInfosAsync(ids2, Path.Combine(path, "2-ids-infos.json"));
 
         // Получить информации об одном бюллетене.
         var id = ids2[0];
-        await GetBulletinAttachInfoAsync(id, Path.Combine(path, "3.json"));
+        await GetBulletinAttachInfoAsync(id, Path.Combine(path, "3-id-info.json"));
 
         // Скачать несколько бюллетеней, приложить файлы к форме.
         await LoadBulletinsDirs(path, limit);

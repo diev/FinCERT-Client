@@ -85,9 +85,15 @@ internal static class CredentialManager
         NativeCredential credential = new()
         {
             AttributeCount = 0,
+#if NET7_0_OR_GREATER
             Attributes = nint.Zero,
             Comment = nint.Zero,
             TargetAlias = nint.Zero,
+#else
+            Attributes = IntPtr.Zero,
+            Comment = IntPtr.Zero,
+            TargetAlias = IntPtr.Zero,
+#endif
             Type = CredentialType.Generic,
             Persist = (uint)CredentialPersistence.LocalMachine,
             CredentialBlobSize = 0,
@@ -152,7 +158,11 @@ internal static class CredentialManager
         string? userName = Marshal.PtrToStringUni(credential.UserName);
         string? secret = null;
 
+#if NET7_0_OR_GREATER
         if (credential.CredentialBlob != nint.Zero)
+#else
+        if (credential.CredentialBlob != IntPtr.Zero)
+#endif
         {
             secret = Marshal.PtrToStringUni(credential.CredentialBlob, (int)credential.CredentialBlobSize / 2);
         }
@@ -212,6 +222,7 @@ internal static partial class NativeMethods
         public nint UserName;
     }
 
+#if NET7_0_OR_GREATER
     [LibraryImport("Advapi32.dll", EntryPoint = "CredReadW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CredRead(string target, CredentialType type, int reservedFlag, out nint credentialPtr);
@@ -226,6 +237,22 @@ internal static partial class NativeMethods
     [LibraryImport("Advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CredFree(nint cred);
+#else
+    [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool CredRead(string target, CredentialType type, int reservedFlag, out nint credentialPtr);
+
+    [DllImport("Advapi32.dll", EntryPoint = "CredWriteW", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern bool CredWrite(ref NativeCredential userCredential, uint flags); //TODO
+
+    [DllImport("Advapi32.dll", EntryPoint = "CredEnumerateW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool CredEnumerate(string? filter, int flag, out int count, out nint pCredentials);
+
+    [DllImport("Advapi32.dll", EntryPoint = "CredFree", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool CredFree(nint cred);
+#endif
 }
 
 public class CredManagerException : Exception

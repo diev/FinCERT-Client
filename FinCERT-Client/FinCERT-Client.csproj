@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <RootNamespace>FincertClient</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>8.2024.705</Version>
+    <Version>8.2024.712</Version>
     <Company>diev</Company>
     <Copyright>2022-2024 Dmitrii Evdokimov</Copyright>
-    <Description>Получение фидов и бюллетеней из FinCERT Банка России.</Description>
+    <Description>Получение фидов и бюллетеней из FinCERT (АСОИ ФинЦЕРТ) Банка России.</Description>
     <NeutralLanguage>ru-RU</NeutralLanguage>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Authors>Diev</Authors>
