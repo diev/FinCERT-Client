@@ -21,9 +21,9 @@ install:
 - ps: >-
     $CommitDateTime = [datetime]::Parse($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
 
-    $BuildDate = $CommitDateTime.ToString('yyyy-MM-dd')
+    $env:BuildDate = $CommitDateTime.ToString('yyyy-MM-dd')
 
-    Update-AppveyorBuild -Version "$BuildDate.$env:APPVEYOR_BUILD_NUMBER"
+    Update-AppveyorBuild -Version "$env:BuildDate.$env:APPVEYOR_BUILD_NUMBER"
 build_script:
 - cmd: build.cmd
 artifacts:
