@@ -35,7 +35,10 @@ public static class ConfigManager
     {
         try
         {
-            string appsettings = Path.ChangeExtension(Environment.ProcessPath!, ".config.json");
+            // Works in Windows, fails in Linux (/usr/lib/dotnet...)
+            // string appsettings = Path.ChangeExtension(Environment.ProcessPath!, ".config.json");
+
+            string appsettings = Path.Combine(AppContext.BaseDirectory, "FeedsAPI.config.json"); //TODO what?
 
             if (File.Exists(appsettings))
             {

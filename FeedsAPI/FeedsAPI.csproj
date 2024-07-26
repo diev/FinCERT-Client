@@ -6,7 +6,7 @@
     <RootNamespace>FeedsApi</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>8.2024.712</Version>
+    <Version>8.2024.726</Version>
     <Company>diev</Company>
     <Copyright>2022-2024 Dmitrii Evdokimov</Copyright>
     <Description>Получение фидов из FinCERT (АСОИ ФинЦЕРТ) Банка России. Обновление референсного проекта до TLS с сертификатами.</Description>

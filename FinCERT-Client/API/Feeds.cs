@@ -39,7 +39,8 @@ internal static class Feeds
     public static async Task<FeedsStatus> GetFeedsStatusAsync(FeedType feed)
     {
         string url = $"antifraud/feeds/{feed}";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<FeedsStatus>()
             ?? throw new FeedsException("Статус фидов не получен.");
     }
@@ -54,7 +55,8 @@ internal static class Feeds
         Directory.CreateDirectory(path);
 
         string url = $"antifraud/feeds/{feed}/download";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
 
         string name = feed switch
         {

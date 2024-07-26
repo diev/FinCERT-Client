@@ -33,16 +33,23 @@ internal static class ConfigManager
 
     public static Config Read()
     {
-        string appsettings = Path.ChangeExtension(Environment.ProcessPath!, ".config.json");
+        // Works in Windows, fails in Linux (/usr/lib/dotnet...)
+        // string appsettings = Path.ChangeExtension(Environment.ProcessPath!, ".config.json");
+
+        string appsettings = Path.Combine(AppContext.BaseDirectory, "FinCERT-Client.config.json"); //TODO what?
 
         if (File.Exists(appsettings))
         {
             using var read = File.OpenRead(appsettings);
             var config = JsonSerializer.Deserialize<Config>(read);
 
-            if (config is null || config.NewConfig)
+            if (config is null)
                 throw new NewConfigException(
-                    );
+                    @$"Файл настроек ""{appsettings}"" испорчен - удалите его.");
+
+            if (config.NewConfig)
+                throw new NewConfigException(
+                    @$"Откорректируйте файл настроек ""{appsettings}"" и отключите NewConfig.");
 
             return config;
         }
@@ -52,22 +59,20 @@ internal static class ConfigManager
         JsonSerializer.Serialize(write, newConfig, GetJsonOptions());
 
         throw new NewConfigException(
-            @$"Создан новый файл настроек ""{appsettings}"".");
+            @$"Создан новый файл настроек ""{appsettings}"" - откорректируйте его.");
     }
 }
 
 internal class NewConfigException : Exception
 {
-    const string message = @"Необходимо откорректировать новый конфиг ""{0}"".";
-
     public NewConfigException()
         : base() { }
 
-    public NewConfigException(string config)
-        : base(string.Format(message, config)) { }
+    public NewConfigException(string message)
+        : base(message) { }
 
-    public NewConfigException(string config, Exception inner)
-        : base(string.Format(message, config), inner) { }
+    public NewConfigException(string message, Exception inner)
+        : base(message, inner) { }
 }
 
 public class ConfigException : Exception

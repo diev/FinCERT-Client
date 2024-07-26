@@ -80,7 +80,8 @@ internal static class Bulletins
     public static async Task<BulletinIds> GetBulletinIdsAsync(int limit = 100, long offset = 0)
     {
         string url = $"bulletins?limit={limit}&offset={offset}";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<BulletinIds>()
             ?? throw new BulletinsException(
                 "Список бюллетеней не получен.");
@@ -95,7 +96,8 @@ internal static class Bulletins
     public static async Task GetBulletinIdsAsync(string path, int limit = 100, long offset = 0)
     {
         string url = $"bulletins?limit={limit}&offset={offset}";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         using var output = File.Create(path);
         await response.Content.CopyToAsync(output);
     }
@@ -109,7 +111,8 @@ internal static class Bulletins
     {
         string url = "bulletins/list";
         var content = new BulletinList(ids);
-        var response = await TlsClient.PostAsJsonAsync(url, content);
+        using var response = await TlsClient.PostAsJsonAsync(url, content);
+        response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<BulletinInfos>()
             ?? throw new BulletinsException(
                 "Информация по бюллетеням не получена.");
@@ -124,7 +127,8 @@ internal static class Bulletins
     {
         string url = "bulletins/list";
         var content = new BulletinList(ids);
-        var response = await TlsClient.PostAsJsonAsync(url, content);
+        using var response = await TlsClient.PostAsJsonAsync(url, content);
+        response.EnsureSuccessStatusCode();
         using var output = File.Create(path);
         await response.Content.CopyToAsync(output);
     }
@@ -137,7 +141,8 @@ internal static class Bulletins
     public static async Task<BulletinAttachInfo> GetBulletinAttachInfoAsync(string id)
     {
         string url = $"bulletins/{id}";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<BulletinAttachInfo>()
             ?? throw new BulletinsException(
                 $"Информация по бюллетеню '{id}' не получена.");
@@ -151,7 +156,8 @@ internal static class Bulletins
     public static async Task GetBulletinAttachInfoAsync(string id, string path)
     {
         string url = $"bulletins/{id}";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         using var output = File.Create(path);
         await response.Content.CopyToAsync(output);
     }
@@ -164,7 +170,8 @@ internal static class Bulletins
     public static async Task DownloadAttachmentAsync(string id, string path)
     {
         string url = $"attachments/{id}/download";
-        var response = await TlsClient.GetAsync(url);
+        using var response = await TlsClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         using var output = File.Create(path);
         await response.Content.CopyToAsync(output);
     }

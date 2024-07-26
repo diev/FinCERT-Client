@@ -1,6 +1,7 @@
 # FinCERT-Client
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hpsbfj3qds34i4yb?svg=true)](https://ci.appveyor.com/project/diev/fincert-client)
+[![.NET8 Desktop](https://github.com/diev/FinCERT-Client/actions/workflows/dotnet8-desktop.yml/badge.svg)](https://github.com/diev/FinCERT-Client/actions/workflows/dotnet8-desktop.yml)
 [![GitHub Release](https://img.shields.io/github/release/diev/FinCERT-Client.svg)](https://github.com/diev/FinCERT-Client/releases/latest)
 
 Получение по API фидов и бюллетеней из FinCERT (АСОИ ФинЦЕРТ) Банка России.
@@ -49,13 +50,9 @@ feeds_20240703-03.zip), то его содержимое будет распак
 
 ## Config / Конфигурация
 
-При первом запуске и отсутствии файла конфигурации `.config.json`, он
-создается рядом с программой с параметрами по умолчанию.
+При первом запуске и отсутствии файла конфигурации `FinCERT-Client.config.json`,
+он создается рядом с программой с параметрами по умолчанию.
 Никакие другие конфиги, переменные среды окружения и т.п. не используются.
-
-В этом файле есть параметр `NewConfig` (true) - программа будет ждать
-корректировки созданного нового файла конфигурации при каждом запуске,
-пока этот параметр не будет удален или переключен в false.
 
 Важно заполнить вашими данными значения параметров:
 
@@ -71,6 +68,9 @@ feeds_20240703-03.zip), то его содержимое будет распак
 
 Если указываете файловые пути, то по правилам JSON надо удваивать `\\`
 в Windows и использовать `/` в Linux.
+
+По окончании корректировки надо переключить параметр NewConfig = `true`
+в `false` или удалить эту строчку полностью.
 
 ## Parameters / Опциональные параметры командной строки
 
@@ -117,20 +117,31 @@ feeds_20240703-03.zip), то его содержимое будет распак
 ## Requirements / Требования
 
 * .NET 6-7-8 (Windows или Linux)
-* КриптоПро для подключения с сертификатом TLS
+* КриптоПро CSP для установки соединения TLS
 * Сертификат TLS клиента и цепочка доверия
 * Логин и пароль
 
-Вариант Linux пока не тестировался, Stunnel программе не требуется.
+*Stunnel* программе не требуется - она сама поднимает соединение TLS.
+
+## Linux
+
+Вариант Linux протестирован в WSL без установки КриптоПро.
 
 Пример сборки проекта под Linux (укажите нужную версию .NET) из папки
 с файлом FinCERT-Client.csproj:
 
-    dotnet publish -r linux-x64 -f net6.0 --self-contained
+    dotnet publish -r linux-x64 -f net8.0 --self-contained
 
-Запуск:
+Запуск из папки с файлами программы:
 
     dotnet FinCERT-Client.dll
+
+## Breaking Changes / Важные изменения
+
+Выяснилось, что механизм получения файла настроек, работавший в Windows
+(одноименный и рядом с exe), в Linux дает неправильное размещение файла.
+Пока пришлось жестко прописать имя файла в коде. Далее придется менять
+эту схему именования, крайне удобную ранее.
 
 ## Versioning / Порядок версий
 
@@ -153,5 +164,7 @@ feeds_20240703-03.zip), то его содержимое будет распак
 
 ## License / Лицензия
 
-Licensed under the [Apache License, Version 2.0](LICENSE).
+Licensed under the [Apache License, Version 2.0](LICENSE).  
 Вы можете использовать эти материалы под свою ответственность.
+
+[![Telegram](https://img.shields.io/badge/t.me-dievdo-blue?logo=telegram)](https://t.me/dievdo)

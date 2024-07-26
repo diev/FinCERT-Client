@@ -150,7 +150,7 @@ public class FincertAPI
     {
         try
         {
-            var response = await _tlsClient.PostAsJsonAsync(_api + "account/logout", string.Empty);
+            using var response = await _tlsClient.PostAsJsonAsync(_api + "account/logout", string.Empty);
             response.EnsureSuccessStatusCode();
         
             if (response.StatusCode == HttpStatusCode.OK)
@@ -204,7 +204,7 @@ public class FincertAPI
 
             for (int i = 0; i < 3; i++) // Сколько делаем попыток получить данные
             {
-                var response = await _tlsClient.GetAsync(_api + $"antifraud/feeds/{feed}");
+                using var response = await _tlsClient.GetAsync(_api + $"antifraud/feeds/{feed}");
                 response.EnsureSuccessStatusCode();
 
                 if (response.StatusCode == HttpStatusCode.OK) // Ответ получен
@@ -260,7 +260,7 @@ public class FincertAPI
 
             for (int i = 0; i < 3; i++) // Сколько делаем попыток получить данные
             {
-                var response = await _tlsClient.GetAsync(_api + $"antifraud/feeds/{feed}/download");
+                using var response = await _tlsClient.GetAsync(_api + $"antifraud/feeds/{feed}/download");
                 response.EnsureSuccessStatusCode();
 
                 if (response.StatusCode == HttpStatusCode.OK) // Ответ получен

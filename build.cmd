@@ -28,6 +28,10 @@ call :bin %1 %option% %prj% net6.0 x64
 call :bin %1 %option% %prj% net7.0 x64
 call :bin %1 %option% %prj% net8.0 x64
 
+rem Linux
+rem set option=4
+rem call :bin %1 %option% %prj% net8.0 x64
+
 call :version_txt %1 %prj% > bin\version.txt
 
 set pack=%1-v%version%.zip
@@ -47,10 +51,10 @@ rem %3 - project.csproj
 rem %4 - net
 rem %5 - x86/x64
 echo === Build %1 %4 %5 ===
-if /%2/==/1/ dotnet publish %3 -o bin\%4\%5 -f %4 -r win-%5
-if /%2/==/2/ dotnet publish %3 -o bin\%4\%5 -f %4 -r win-%5 -p:PublishSingleFile=true --no-self-contained
-if /%2/==/3/ dotnet publish %3 -o bin\%4\%5 -f %4 -r win-%5 -p:PublishSingleFile=true
-if /%2/==/4/ dotnet publish %3 -o bin\%4\%5 -f %4 -r linux-%5 --self-contained
+if /%2/==/1/ dotnet publish %3 -o bin\%4.%5 -f %4 -r win-%5
+if /%2/==/2/ dotnet publish %3 -o bin\%4.%5 -f %4 -r win-%5 -p:PublishSingleFile=true --no-self-contained
+if /%2/==/3/ dotnet publish %3 -o bin\%4.%5 -f %4 -r win-%5 -p:PublishSingleFile=true
+if /%2/==/4/ dotnet publish %3 -o bin\%4.linux-%5 -f %4 -r linux-%5 --self-contained
 goto :eof
 
 :init
@@ -94,7 +98,8 @@ echo Requires .NET [Desktop] Runtime to run
 echo Download from https://dotnet.microsoft.com/download
 echo.
 echo Run once to create %1.config.json
-echo and correct it
+echo correct it and switch NewConfig to false
+echo (or delete this row with NewConfig)
 echo.
 echo https://github.com/diev/%repo%
 echo https://gitverse.ru/diev/%repo%
