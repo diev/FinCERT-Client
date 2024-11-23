@@ -372,7 +372,7 @@ internal static class TlsClient
         */
 
         // RetryRequired if
-        return (code >= HttpStatusCode.InternalServerError) // 500+
+        return ((int)code >= (int)HttpStatusCode.InternalServerError) // 500+
             || (code == HttpStatusCode.RequestTimeout)      // 408
             || (code == HttpStatusCode.TooManyRequests)     // 429
             || (code == HttpStatusCode.NoContent);          // 204 if aplicable here

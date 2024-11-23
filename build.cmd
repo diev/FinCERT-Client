@@ -20,13 +20,18 @@ rem 3 - Build a single-file app when no runtime required (NET embedded)
 rem 4 - Build an app with many dlls for Linux
 set option=2
 
-call :bin %1 %option% %prj% net6.0 x86
-call :bin %1 %option% %prj% net7.0 x86
-call :bin %1 %option% %prj% net8.0 x86
+rem call :bin %1 %option% %prj% net6.0 win-x86
+rem call :bin %1 %option% %prj% net7.0 win-x86
+call :bin %1 %option% %prj% net8.0 win-x86
+call :bin %1 %option% %prj% net9.0 win-x86
 
-call :bin %1 %option% %prj% net6.0 x64
-call :bin %1 %option% %prj% net7.0 x64
-call :bin %1 %option% %prj% net8.0 x64
+rem call :bin %1 %option% %prj% net6.0 win-x64
+rem call :bin %1 %option% %prj% net7.0 win-x64
+call :bin %1 %option% %prj% net8.0 win-x64
+call :bin %1 %option% %prj% net9.0 win-x64
+
+call :bin %1 %option% %prj% net8.0 linux-x64
+call :bin %1 %option% %prj% net9.0 linux-x64
 
 rem Linux
 rem set option=4
@@ -51,10 +56,10 @@ rem %3 - project.csproj
 rem %4 - net
 rem %5 - x86/x64
 echo === Build %1 %4 %5 ===
-if /%2/==/1/ dotnet publish %3 -o bin\%4.%5 -f %4 -r win-%5
-if /%2/==/2/ dotnet publish %3 -o bin\%4.%5 -f %4 -r win-%5 -p:PublishSingleFile=true --no-self-contained
-if /%2/==/3/ dotnet publish %3 -o bin\%4.%5 -f %4 -r win-%5 -p:PublishSingleFile=true
-if /%2/==/4/ dotnet publish %3 -o bin\%4.linux-%5 -f %4 -r linux-%5 --self-contained
+if /%2/==/1/ dotnet publish %3 -o bin\%4.%5 -f %4 -r %5
+if /%2/==/2/ dotnet publish %3 -o bin\%4.%5 -f %4 -r %5 -p:PublishSingleFile=true --no-self-contained
+if /%2/==/3/ dotnet publish %3 -o bin\%4.%5 -f %4 -r %5 -p:PublishSingleFile=true
+if /%2/==/4/ dotnet publish %3 -o bin\%4.%5 -f %4 -r %5 --self-contained
 goto :eof
 
 :init
