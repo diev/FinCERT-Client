@@ -6,9 +6,9 @@
     <RootNamespace>FincertClient</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>9.2024.1123</Version>
+    <Version>9.2025.313</Version>
     <Company>diev</Company>
-    <Copyright>2022-2024 Dmitrii Evdokimov</Copyright>
+    <Copyright>2022-2025 Dmitrii Evdokimov</Copyright>
     <Description>Получение фидов и бюллетеней из FinCERT (АСОИ ФинЦЕРТ) Банка России.</Description>
     <NeutralLanguage>ru-RU</NeutralLanguage>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

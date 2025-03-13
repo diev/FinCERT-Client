@@ -1,6 +1,6 @@
 ﻿#region License
 /*
-Copyright 2022-2024 Dmitrii Evdokimov
+Copyright 2022-2025 Dmitrii Evdokimov
 Open source software
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,11 +44,20 @@ internal static class X509
     public static X509Certificate2 GetMyCertificate(string thumbprint, bool validOnly = true)
     {
         using X509Store store = new(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadOnly);
-        var found = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly);
 
-        if (found.Count == 1)
+        //var found = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly);
+
+        //if (found.Count == 1)
+        //{
+        //    return found[0];
+        //}
+
+        foreach (var cert in store.Certificates)
         {
-            return found[0];
+            if (cert.Thumbprint.Equals(thumbprint, StringComparison.OrdinalIgnoreCase))
+            {
+                return cert;
+            }
         }
 
         throw new ArgumentNullException(nameof(thumbprint),

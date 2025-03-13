@@ -1,6 +1,6 @@
 ﻿#region License
 /*
-Copyright 2022-2024 Dmitrii Evdokimov
+Copyright 2022-2025 Dmitrii Evdokimov
 Open source software
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -404,10 +404,19 @@ internal static class TlsClient
                     "My certificate thumbprint not found in config.");
 
             using X509Store store = new(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadOnly);
-            var found = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly);
 
-            if (found.Count == 1)
-                return found[0];
+            //var found = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly);
+
+            //if (found.Count == 1)
+            //    return found[0];
+
+            foreach (var cert in store.Certificates)
+            {
+                if (cert.Thumbprint.Equals(thumbprint, StringComparison.OrdinalIgnoreCase))
+                {
+                    return cert;
+                }
+            }
 
             throw new Exception(
                 $"My certificate with thumbprint '{thumbprint}' not found in storage.");

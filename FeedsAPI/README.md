@@ -47,7 +47,7 @@ read-only.
 
 ## Requirements / Требования
 
-* .NET 6-7-8 (Windows или Linux)
+* .NET 6-7-8-9 (Windows или Linux)
 * КриптоПро CSP для установки соединения TLS
 * Сертификат TLS клиента и цепочка доверия
 * Логин и пароль

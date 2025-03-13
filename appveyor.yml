@@ -37,7 +37,7 @@ deploy:
   release: $(BuildDate)
   description: 'AppVeyor build #$(APPVEYOR_BUILD_NUMBER): $(APPVEYOR_REPO_COMMIT_MESSAGE)'
   auth_token:
-    secure: Oyf/ccEamPwfWLPEZQlf9hPfhGGXu3Kqnmt9saeaTMH2OE6OR0tAt2JkDl/FRR9o
+    secure: 74qqu+vLxLuUIYPO2rnCxWzUfSt9qRCh/yGXUKb6VlkT7w7fmbNf94V/xTH1t7Nh
   artifact: zip1,zip2
   force_update: true
   on:
