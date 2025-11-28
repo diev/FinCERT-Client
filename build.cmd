@@ -20,18 +20,17 @@ rem 3 - Build a single-file app when no runtime required (NET embedded)
 rem 4 - Build an app with many dlls for Linux
 set option=2
 
-rem call :bin %1 %option% %prj% net6.0 win-x86
-rem call :bin %1 %option% %prj% net7.0 win-x86
-call :bin %1 %option% %prj% net8.0 win-x86
-call :bin %1 %option% %prj% net9.0 win-x86
+rem call :bin %1 %option% %prj% net8.0 win-x86
+rem call :bin %1 %option% %prj% net9.0 win-x86
+rem call :bin %1 %option% %prj% net10.0 win-x86
 
-rem call :bin %1 %option% %prj% net6.0 win-x64
-rem call :bin %1 %option% %prj% net7.0 win-x64
 call :bin %1 %option% %prj% net8.0 win-x64
-call :bin %1 %option% %prj% net9.0 win-x64
+rem call :bin %1 %option% %prj% net9.0 win-x64
+call :bin %1 %option% %prj% net10.0 win-x64
 
-call :bin %1 %option% %prj% net8.0 linux-x64
-call :bin %1 %option% %prj% net9.0 linux-x64
+rem call :bin %1 %option% %prj% net8.0 linux-x64
+rem call :bin %1 %option% %prj% net9.0 linux-x64
+rem call :bin %1 %option% %prj% net10.0 linux-x64
 
 rem Linux
 rem set option=4
