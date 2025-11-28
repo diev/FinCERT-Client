@@ -1,7 +1,7 @@
 # FinCERT-Client
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hpsbfj3qds34i4yb?svg=true)](https://ci.appveyor.com/project/diev/fincert-client)
-[![.NET8 Desktop](https://github.com/diev/FinCERT-Client/actions/workflows/dotnet8-desktop.yml/badge.svg)](https://github.com/diev/FinCERT-Client/actions/workflows/dotnet8-desktop.yml)
+[![.NET10 Desktop](https://github.com/diev/FinCERT-Client/actions/workflows/dotnet10-desktop.yml/badge.svg)](https://github.com/diev/FinCERT-Client/actions/workflows/dotnet10-desktop.yml)
 [![GitHub Release](https://img.shields.io/github/release/diev/FinCERT-Client.svg)](https://github.com/diev/FinCERT-Client/releases/latest)
 
 Получение по API фидов и бюллетеней из FinCERT (АСОИ ФинЦЕРТ) Банка России.
